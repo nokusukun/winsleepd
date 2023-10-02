@@ -23,6 +23,7 @@ import (
 	"path/filepath"
 	"strings"
 	"winsleepd"
+	tui "winsleepd/cmd/tui/cmd"
 
 	"golang.org/x/sys/windows/svc"
 )
@@ -54,7 +55,12 @@ func main() {
 	}
 
 	if len(os.Args) < 2 {
-		usage("no command specified")
+		//usage("no command specified")
+		err := tui.Run()
+		if err != nil {
+			log.Fatalf("failed to run program: %v", err)
+		}
+		return
 	}
 
 	cmd := strings.ToLower(os.Args[1])
@@ -93,6 +99,8 @@ func main() {
 		err = controlService(ServiceName, svc.Pause, svc.Paused)
 	case "continue":
 		err = controlService(ServiceName, svc.Continue, svc.Running)
+	case "tui":
+		err = tui.Run()
 	case "debug:sleep":
 		log.Println("sleeping")
 		winsleepd.Sleep()
