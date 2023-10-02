@@ -14,6 +14,6 @@ func Run() error {
 	return nil
 }
 
-func (m Model) Init() tea.Cmd {
+func (m DaemonModel) Init() tea.Cmd {
 	return nil
 }

@@ -6,7 +6,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-type Model struct {
+type DaemonModel struct {
 	Table       table.Model
 	Active      bool
 	TableKeyMap table.KeyMap
@@ -30,7 +30,7 @@ var DefaultKeyMap = KeyMap{
 var focused = table.DefaultStyles()
 var unfocused = table.DefaultStyles()
 
-func New() Model {
+func New() DaemonModel {
 	focused = table.DefaultStyles()
 	focused.Header = focused.Header.
 		BorderStyle(lipgloss.NormalBorder()).
@@ -63,7 +63,7 @@ func New() Model {
 		{"0", "Pending text files"},
 	}
 
-	return Model{
+	return DaemonModel{
 		Table: table.New(
 			table.WithColumns(columns),
 			table.WithRows(rows),
