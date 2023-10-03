@@ -70,27 +70,21 @@ func New() Model {
 
 	rows := []table.Row{
 		{emoji.False, "Install"},
-		{emoji.False, "Start"},
-		{emoji.False, "Stop"},
-		{emoji.False, "Pause"},
-		{emoji.Empty, "Sleep"},
 	}
 
 	functions := make([]tea.Msg, len(rows))
 
-	f := []tea.Msg{
-		nil,
-	}
-
-	for i := range f {
-		functions[i] = f[i]
+	for index, function := range []tea.Msg{
+		CheckIfRunning{},
+	} {
+		functions[index] = function
 	}
 
 	newTable := table.New(
 		table.WithColumns(columns),
 		table.WithRows(rows),
 		table.WithFocused(true),
-		table.WithHeight(4),
+		table.WithHeight(8),
 	)
 
 	newTable.SetStyles(focused)
@@ -104,13 +98,38 @@ func New() Model {
 	}
 }
 
-func (m Model) Running() Model {
+func (m Model) Running() (Model, tea.Cmd) {
+	// if !running {
+	// 	return m
+	// }
 	currentRows := m.Table.Rows()
+	if len(currentRows) > 5 {
+		return m, nil
+	}
 	newRows := []table.Row{
+		{emoji.False, "Start"},
+		{emoji.False, "Stop"},
+		{emoji.False, "Pause"},
+		{emoji.Empty, "Sleep"},
 		{emoji.Empty, "Config"},
 		{emoji.False, "Debug mode"},
 	}
+
+	newFuncs := make([]tea.Msg, len(newRows))
+
+	for index, function := range []tea.Msg{
+		Toggle{},
+		Toggle{},
+		Toggle{},
+		Toggle{},
+		Toggle{},
+		Toggle{},
+	} {
+		newFuncs[index] = function
+	}
+
 	rows := append(currentRows, newRows...)
 	m.Table.SetRows(rows)
-	return m
+	m.EnterFunction = append(m.EnterFunction, newFuncs...)
+	return m.Update(Toggle{})
 }

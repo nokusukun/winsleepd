@@ -36,6 +36,6 @@ func New() DaemonModel {
 }
 
 func (m DaemonModel) running() DaemonModel {
-	m.Table = m.Table.Running()
+	m.Table, _ = m.Table.Running()
 	return m
 }

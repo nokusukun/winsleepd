@@ -23,7 +23,9 @@ func (m DaemonModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.KeyMap.Quit):
 			return m, tea.Quit
 		case key.Matches(msg, m.KeyMap.Enter):
-
+			newTable, _ := m.Table.Update(msg)
+			m.Table = newTable
+			return m, nil
 		}
 	default:
 		return m, cmd

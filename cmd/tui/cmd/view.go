@@ -1,9 +1,17 @@
 package tui
 
-import "strings"
+import (
+	"github.com/charmbracelet/lipgloss"
+	"strings"
+)
+
+var baseStyle = lipgloss.NewStyle().
+	BorderStyle(lipgloss.NormalBorder()).
+	BorderForeground(lipgloss.Color("240"))
 
 func (m DaemonModel) View() string {
 	stringBuilder := strings.Builder{}
 	stringBuilder.WriteString(m.Table.View())
-	return stringBuilder.String()
+
+	return baseStyle.Render(stringBuilder.String())
 }
