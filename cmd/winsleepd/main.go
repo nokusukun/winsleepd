@@ -84,7 +84,7 @@ func main() {
 			log.Fatalf("failed to get user home directory: %v", err)
 			return
 		}
-		err = exec.Command("notepad", filepath.Join(dir, ".winsleepd.json")).Run()
+		err = exec.Command("cmd", "/C", "start", "", filepath.Join(dir, ".winsleepd.json")).Run()
 		if err != nil {
 			log.Fatalf("failed to open configuration: %v", err)
 			return

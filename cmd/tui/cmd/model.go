@@ -2,15 +2,12 @@ package tui
 
 import (
 	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/table"
-	"github.com/charmbracelet/lipgloss"
+	t "winsleepd/cmd/tui/table"
 )
 
 type DaemonModel struct {
-	Table       table.Model
-	Active      bool
-	TableKeyMap table.KeyMap
-	KeyMap      KeyMap
+	Table  t.Model
+	KeyMap KeyMap
 }
 
 type KeyMap struct {
@@ -27,51 +24,18 @@ var DefaultKeyMap = KeyMap{
 	Quit:  key.NewBinding(key.WithKeys("q", "esc", "ctrl+c")),
 }
 
-var focused = table.DefaultStyles()
-var unfocused = table.DefaultStyles()
+type Emoji struct {
+	True, False, Empty string
+}
 
 func New() DaemonModel {
-	focused = table.DefaultStyles()
-	focused.Header = focused.Header.
-		BorderStyle(lipgloss.NormalBorder()).
-		BorderForeground(lipgloss.Color("240")).
-		BorderBottom(true).
-		Bold(false)
-	focused.Selected = focused.Selected.
-		Foreground(lipgloss.Color("229")).
-		Background(lipgloss.Color("57")).
-		Bold(false)
-
-	unfocused = table.DefaultStyles()
-	unfocused.Header = unfocused.Header.
-		BorderStyle(lipgloss.NormalBorder()).
-		BorderForeground(lipgloss.Color("240")).
-		BorderBottom(true).
-		Bold(false)
-	unfocused.Selected = unfocused.Selected.
-		Foreground(lipgloss.Color("#bbbbbb"))
-
-	columns := []table.Column{
-		{Title: "#", Width: 6},
-		{Title: "Stats", Width: 50},
-	}
-
-	rows := []table.Row{
-		{"0", "Images with captions"},
-		{"0", "Images with captions that match directories"},
-		{"0", "Missing captions"},
-		{"0", "Pending text files"},
-	}
-
 	return DaemonModel{
-		Table: table.New(
-			table.WithColumns(columns),
-			table.WithRows(rows),
-			table.WithFocused(true),
-			table.WithHeight(4),
-		),
-		Active:      true,
-		TableKeyMap: table.DefaultKeyMap(),
-		KeyMap:      DefaultKeyMap,
+		Table:  t.New(),
+		KeyMap: DefaultKeyMap,
 	}
+}
+
+func (m DaemonModel) running() DaemonModel {
+	m.Table = m.Table.Running()
+	return m
 }
