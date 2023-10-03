@@ -5,5 +5,8 @@ import (
 )
 
 func (m Model) Init() tea.Cmd {
-	return nil
+	check := func() tea.Msg {
+		return CheckIfRunning{}
+	}
+	return check
 }

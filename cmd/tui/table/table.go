@@ -99,8 +99,10 @@ func New() Model {
 }
 
 func (m Model) Running() (Model, tea.Cmd) {
+	// TODO: Check if not running yet.
+	// if not, return m since we haven't installed yet
 	// if !running {
-	// 	return m
+	// 	return m, nil
 	// }
 	currentRows := m.Table.Rows()
 	if len(currentRows) > 5 {
