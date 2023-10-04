@@ -20,6 +20,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		return m, nil
 	case CheckIfRunning:
 		return m.Running()
+	case Install:
+		return m.Install()
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, m.Additional.Enter):
@@ -36,4 +38,5 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 }
 
 type CheckIfRunning struct{}
+type Install struct{}
 type Toggle struct{}

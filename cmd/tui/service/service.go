@@ -1,12 +1,14 @@
 package service
 
 import (
+	"fmt"
 	"golang.org/x/sys/windows/svc"
 	"golang.org/x/sys/windows/svc/mgr"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"syscall"
 	"winsleepd"
 	daemon "winsleepd/cmd/winsleepd"
 )
@@ -29,16 +31,45 @@ func NewService() *Service {
 		running:     false,
 		debug:       false,
 	}
+	service.installed = service.IsInstalled()
 	return service
 }
 
+func Get() *Service {
+	if service != nil {
+		return service
+	}
+	return NewService()
+}
+
+func runElevated() {
+	cmd := exec.Command("powershell", "Start-Process", "powershell", "-Verb", "runas", "-ArgumentList", os.Args[0]+" elevated")
+	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+	err := cmd.Run()
+	if err != nil {
+		fmt.Println("Error elevating", err)
+	}
+}
+
 func (s *Service) Install() {
-	daemon.InstallService(s.ServiceName, s.Description)
+	if s.installed {
+		return
+	}
+	err := daemon.InstallService(s.ServiceName, s.Description)
+	if err != nil {
+		log.Fatalf("failed to install service: %v", err)
+		return
+	}
+	s.installed = true
 }
 
 func (s *Service) Uninstall() {
 	if s.IsInstalled() {
-		daemon.RemoveService(s.ServiceName)
+		err := daemon.RemoveService(s.ServiceName)
+		if err != nil {
+			log.Fatalf("failed to remove service: %v", err)
+			return
+		}
 	}
 	s.installed = false
 }
@@ -57,40 +88,44 @@ func (s *Service) Config() {
 }
 
 func (s *Service) Start() {
-	daemon.StartService(s.ServiceName)
+	err := daemon.StartService(s.ServiceName)
+	if err != nil {
+		log.Fatalf("failed to start service: %v", err)
+	}
 }
 
 func (s *Service) Stop() {
 	if s.running {
-		daemon.ControlService(s.ServiceName, svc.Stop, svc.Stopped)
+		err := daemon.ControlService(s.ServiceName, svc.Stop, svc.Stopped)
+		if err != nil {
+			log.Fatalf("failed to stop service: %v", err)
+		}
 	}
 	s.running = false
 }
 
 func (s *Service) Pause() {
 	if s.running {
-		daemon.ControlService(s.ServiceName, svc.Pause, svc.Paused)
+		err := daemon.ControlService(s.ServiceName, svc.Pause, svc.Paused)
+		if err != nil {
+			log.Fatalf("failed to pause service: %v", err)
+		}
 	}
 	s.running = false
 }
 
 func (s *Service) Continue() {
 	if s.running {
-		daemon.ControlService(s.ServiceName, svc.Continue, svc.Running)
+		err := daemon.ControlService(s.ServiceName, svc.Continue, svc.Running)
+		if err != nil {
+			log.Fatalf("failed to continue service: %v", err)
+		}
 	}
 	s.running = false
 }
 
 func (s *Service) Sleep() {
 	winsleepd.Sleep()
-}
-
-func Get() *Service {
-	if service != nil {
-		return service
-	}
-	service = NewService()
-	return service
 }
 
 func (s *Service) IsInstalled() bool {

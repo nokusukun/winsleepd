@@ -77,7 +77,7 @@ func New() Model {
 	functions := make([]tea.Msg, len(rows))
 
 	for index, function := range []tea.Msg{
-		CheckIfRunning{},
+		Install{},
 	} {
 		functions[index] = function
 	}
@@ -99,6 +99,13 @@ func New() Model {
 		TableKeyMap:   table.DefaultKeyMap(),
 		Additional:    DefaultKeyMap,
 	}
+}
+
+func (m Model) Install() (Model, tea.Cmd) {
+	if !service.Get().IsInstalled() {
+		service.Get().Install()
+	}
+	return m.Running()
 }
 
 func (m Model) Running() (Model, tea.Cmd) {
