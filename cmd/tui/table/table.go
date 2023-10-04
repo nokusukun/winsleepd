@@ -176,9 +176,6 @@ func (m Model) Installed() (Model, tea.Cmd) {
 
 func (m Model) Query() (Model, tea.Cmd) {
 	currentRows := m.Table.Rows()
-	if len(currentRows) > 5 {
-		return m, nil
-	}
 	switch service.Get().QueryState() {
 	case svc.Running:
 		currentRows[StartOpt][0] = emoji.True
@@ -197,6 +194,5 @@ func (m Model) Query() (Model, tea.Cmd) {
 		currentRows[ContinueOpt][0] = emoji.False
 	}
 	m.Table.SetRows(currentRows)
-	m.Table.SetHeight(len(currentRows) + 1)
 	return m, nil
 }
