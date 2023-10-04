@@ -3,6 +3,7 @@ package tui
 import (
 	"fmt"
 	tea "github.com/charmbracelet/bubbletea"
+	"winsleepd/cmd/tui/table"
 )
 
 func Run() error {
@@ -15,5 +16,8 @@ func Run() error {
 }
 
 func (m DaemonModel) Init() tea.Cmd {
-	return nil
+	check := func() tea.Msg {
+		return table.CheckInstalled{}
+	}
+	return check
 }

@@ -4,14 +4,15 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"reflect"
-	"winsleepd/cmd/tui/service"
+	"winsleepd/cmd/tui/table"
 )
 
 func (m DaemonModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
-	case service.Service:
-		m.table.Update(msg)
+	case table.CheckInstalled:
+		m.table, _ = m.table.Update(msg)
+		return m, nil
 	case tea.KeyMsg:
 		refKeyMap := reflect.ValueOf(m.table.TableKeyMap)
 		for i := 0; i < refKeyMap.NumField(); i++ {

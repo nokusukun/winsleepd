@@ -33,8 +33,6 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		return m.Query()
 	case CheckInstalled:
 		return m.Installed()
-	//case Install:
-	//	return m.Install()
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, m.Additional.Enter):
