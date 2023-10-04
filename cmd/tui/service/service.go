@@ -60,13 +60,18 @@ func (s *Service) Install() {
 
 func (s *Service) Uninstall() {
 	if s.IsInstalled() {
+		if s.IsPaused() {
+			s.Continue()
+		}
+		if s.IsRunning() {
+			s.Stop()
+		}
 		err := daemon.RemoveService(s.ServiceName)
 		if err != nil {
 			log.Fatalf("failed to remove service: %v", err)
 			return
 		}
 	}
-	s.IsInstalled()
 }
 
 func (s *Service) Config() {
@@ -94,7 +99,7 @@ func (s *Service) Start() {
 }
 
 func (s *Service) Stop() {
-	if s.IsRunning() {
+	if s.IsRunning() || s.IsPaused() {
 		err := daemon.ControlService(s.ServiceName, svc.Stop, svc.Stopped)
 		if err != nil {
 			log.Fatalf("failed to stop service: %v", err)
@@ -104,7 +109,7 @@ func (s *Service) Stop() {
 }
 
 func (s *Service) Pause() {
-	if !s.IsPaused() {
+	if s.IsRunning() && !s.IsPaused() {
 		err := daemon.ControlService(s.ServiceName, svc.Pause, svc.Paused)
 		if err != nil {
 			log.Fatalf("failed to pause service: %v", err)

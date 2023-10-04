@@ -86,7 +86,7 @@ func New() Model {
 		table.WithColumns(columns),
 		table.WithRows(rows),
 		table.WithFocused(true),
-		table.WithHeight(8),
+		table.WithHeight(len(rows)+2),
 	)
 
 	newTable.SetStyles(focused)
@@ -134,12 +134,13 @@ func (m Model) Uninstall() (Model, tea.Cmd) {
 
 func (m Model) Installed() (Model, tea.Cmd) {
 	if !service.Get().IsInstalled() {
-		return m, nil
+		return New(), nil
 	}
 	currentRows := m.Table.Rows()
 	if len(currentRows) > 5 {
 		return m, nil
 	}
+	currentRows[InstallOpt][0] = emoji.True
 	newRows := []table.Row{
 		{emoji.False, "Start"},
 		{emoji.False, "Stop"},
@@ -148,11 +149,14 @@ func (m Model) Installed() (Model, tea.Cmd) {
 		{emoji.Empty, "Sleep"},
 		{emoji.Empty, "Config"},
 		{emoji.False, "Debug mode"},
+		{emoji.False, "Uninstall"},
 	}
 
 	newFuncs := make([]tea.Msg, len(newRows))
 
 	for index, function := range []tea.Msg{
+		Toggle{},
+		Toggle{},
 		Toggle{},
 		Toggle{},
 		Toggle{},
@@ -165,6 +169,7 @@ func (m Model) Installed() (Model, tea.Cmd) {
 
 	rows := append(currentRows, newRows...)
 	m.Table.SetRows(rows)
+	m.Table.SetHeight(len(rows) + 1)
 	m.EnterFunction = append(m.EnterFunction, newFuncs...)
 	return m.Query()
 }
@@ -192,5 +197,6 @@ func (m Model) Query() (Model, tea.Cmd) {
 		currentRows[ContinueOpt][0] = emoji.False
 	}
 	m.Table.SetRows(currentRows)
+	m.Table.SetHeight(len(currentRows) + 1)
 	return m, nil
 }
