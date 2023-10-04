@@ -38,9 +38,9 @@ type Emoji struct {
 }
 
 var emoji = Emoji{
-	True:  "✔️",
-	False: "",
-	Empty: "",
+	True:  "✅",
+	False: "❌",
+	Empty: "⬜",
 }
 
 var focused = table.DefaultStyles()
@@ -185,19 +185,19 @@ func (m Model) Query() (Model, tea.Cmd) {
 	switch service.Get().QueryState() {
 	case svc.Running:
 		currentRows[StartOpt][0] = emoji.True
-		currentRows[StopOpt][0] = emoji.False
-		currentRows[PauseOpt][0] = emoji.False
+		currentRows[StopOpt][0] = emoji.Empty
+		currentRows[PauseOpt][0] = emoji.Empty
 		currentRows[ContinueOpt][0] = emoji.True
 	case svc.Stopped:
-		currentRows[StartOpt][0] = emoji.False
+		currentRows[StartOpt][0] = emoji.Empty
 		currentRows[StopOpt][0] = emoji.True
 		currentRows[PauseOpt][0] = emoji.False
 		currentRows[ContinueOpt][0] = emoji.False
 	case svc.Paused:
 		currentRows[StartOpt][0] = emoji.False
-		currentRows[StopOpt][0] = emoji.False
+		currentRows[StopOpt][0] = emoji.Empty
 		currentRows[PauseOpt][0] = emoji.True
-		currentRows[ContinueOpt][0] = emoji.False
+		currentRows[ContinueOpt][0] = emoji.Empty
 	}
 	m.Table.SetRows(currentRows)
 	return m, nil

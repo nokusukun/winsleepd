@@ -13,8 +13,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		switch index {
 		case InstallOpt:
 			return m.Install()
-		case StartOpt:
-			return m.Start()
+		case StartOpt: // TODO: We can only start again if we are stopped
+			return m.Start() // Pause means the service is technically started (it has a PID)
 		case StopOpt:
 			return m.Stop()
 		case PauseOpt:

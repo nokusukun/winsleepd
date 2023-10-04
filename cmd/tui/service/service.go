@@ -88,7 +88,7 @@ func (s *Service) Config() {
 }
 
 func (s *Service) Start() {
-	if s.IsRunning() {
+	if s.IsRunning() || s.IsPaused() {
 		return
 	}
 	err := daemon.StartService(s.ServiceName)
