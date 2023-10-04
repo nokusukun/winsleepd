@@ -6,7 +6,7 @@ import (
 
 func (m Model) Init() tea.Cmd {
 	check := func() tea.Msg {
-		return CheckInstalled{}
+		return Query{}
 	}
 	return check
 }

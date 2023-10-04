@@ -12,6 +12,5 @@ var baseStyle = lipgloss.NewStyle().
 func (m DaemonModel) View() string {
 	stringBuilder := strings.Builder{}
 	stringBuilder.WriteString(m.table.View())
-
 	return baseStyle.Render(stringBuilder.String())
 }

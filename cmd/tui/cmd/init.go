@@ -17,7 +17,7 @@ func Run() error {
 
 func (m DaemonModel) Init() tea.Cmd {
 	check := func() tea.Msg {
-		return table.CheckInstalled{}
+		return table.Query{}
 	}
 	return check
 }

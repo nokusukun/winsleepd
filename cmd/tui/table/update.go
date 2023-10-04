@@ -31,8 +31,12 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			return m.Uninstall()
 		}
 		return m.Query()
-	case CheckInstalled:
-		return m.Installed()
+	case Query:
+		m.Spinner, _ = m.Spinner.Update(m.Spinner.Tick())
+		model, cmd := m.Installed()
+		return model, tea.Batch(cmd, func() tea.Msg {
+			return Query{}
+		})
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, m.Additional.Enter):
@@ -40,7 +44,6 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				//m.Table.Blur()
 				return m.Update(ok)
 			}
-
 		}
 		m.Table, _ = m.Table.Update(msg)
 		return m, nil
@@ -48,7 +51,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	return m, nil
 }
 
-type CheckInstalled struct{}
+type Query struct{}
 type Install struct{}
 type Toggle struct{}
 

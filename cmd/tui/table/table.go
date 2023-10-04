@@ -2,6 +2,7 @@ package table
 
 import (
 	"github.com/charmbracelet/bubbles/key"
+	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -15,6 +16,7 @@ type Model struct {
 	Active        bool
 	TableKeyMap   table.KeyMap
 	Additional    KeyMap
+	Spinner       spinner.Model
 }
 
 type KeyMap struct {
@@ -91,12 +93,16 @@ func New() Model {
 
 	newTable.SetStyles(focused)
 
+	s := spinner.New()
+	s.Spinner = spinner.Dot
+
 	return Model{
 		Table:         newTable,
 		EnterFunction: functions,
 		Active:        true,
 		TableKeyMap:   table.DefaultKeyMap(),
 		Additional:    DefaultKeyMap,
+		Spinner:       s,
 	}
 }
 
@@ -138,7 +144,7 @@ func (m Model) Installed() (Model, tea.Cmd) {
 	}
 	currentRows := m.Table.Rows()
 	if len(currentRows) > 5 {
-		return m, nil
+		return m.Query()
 	}
 	currentRows[InstallOpt][0] = emoji.True
 	newRows := []table.Row{
