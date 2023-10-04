@@ -39,6 +39,6 @@ func New() DaemonModel {
 }
 
 func (m DaemonModel) checkInstall() DaemonModel {
-	m.table, _ = m.table.Running()
+	m.table, _ = m.table.Installed()
 	return m
 }

@@ -16,8 +16,6 @@ import (
 type Service struct {
 	ServiceName string
 	Description string
-	installed   bool
-	running     bool
 	debug       bool
 }
 
@@ -27,11 +25,8 @@ func NewService() *Service {
 	service = &Service{
 		ServiceName: "winsleepd",
 		Description: "Stupidly Simple Sleep Daemon",
-		installed:   false,
-		running:     false,
 		debug:       false,
 	}
-	service.installed = service.IsInstalled()
 	return service
 }
 
@@ -52,7 +47,7 @@ func runElevated() {
 }
 
 func (s *Service) Install() {
-	if s.installed {
+	if s.IsInstalled() {
 		return
 	}
 	err := daemon.InstallService(s.ServiceName, s.Description)
@@ -60,7 +55,7 @@ func (s *Service) Install() {
 		log.Fatalf("failed to install service: %v", err)
 		return
 	}
-	s.installed = true
+	s.IsInstalled()
 }
 
 func (s *Service) Uninstall() {
@@ -71,7 +66,7 @@ func (s *Service) Uninstall() {
 			return
 		}
 	}
-	s.installed = false
+	s.IsInstalled()
 }
 
 func (s *Service) Config() {
@@ -88,40 +83,42 @@ func (s *Service) Config() {
 }
 
 func (s *Service) Start() {
+	if s.IsRunning() {
+		return
+	}
 	err := daemon.StartService(s.ServiceName)
 	if err != nil {
 		log.Fatalf("failed to start service: %v", err)
 	}
+	s.IsRunning()
 }
 
 func (s *Service) Stop() {
-	if s.running {
+	if s.IsRunning() {
 		err := daemon.ControlService(s.ServiceName, svc.Stop, svc.Stopped)
 		if err != nil {
 			log.Fatalf("failed to stop service: %v", err)
 		}
 	}
-	s.running = false
+	s.IsRunning()
 }
 
 func (s *Service) Pause() {
-	if s.running {
+	if !s.IsPaused() {
 		err := daemon.ControlService(s.ServiceName, svc.Pause, svc.Paused)
 		if err != nil {
 			log.Fatalf("failed to pause service: %v", err)
 		}
 	}
-	s.running = false
 }
 
 func (s *Service) Continue() {
-	if s.running {
+	if s.IsPaused() {
 		err := daemon.ControlService(s.ServiceName, svc.Continue, svc.Running)
 		if err != nil {
 			log.Fatalf("failed to continue service: %v", err)
 		}
 	}
-	s.running = false
 }
 
 func (s *Service) Sleep() {
@@ -137,9 +134,38 @@ func (s *Service) IsInstalled() bool {
 	o, err := servicesmsc.OpenService(s.ServiceName)
 	if err == nil {
 		o.Close()
-		s.installed = true
 		return true
 	}
-	s.installed = false
 	return false
+}
+
+func (s *Service) QueryState() svc.State {
+	m, err := mgr.Connect()
+	if err != nil {
+		log.Fatalf("could not connect to service manager: %v", err)
+		return svc.Stopped
+	}
+	defer m.Disconnect()
+
+	service, err := m.OpenService(s.ServiceName)
+	if err != nil {
+		log.Fatalf("could not access service: %v", err)
+		return svc.Stopped
+	}
+	defer service.Close()
+
+	status, err := service.Query()
+	if err != nil {
+		log.Fatalf("could not query service status: %v", err)
+		return svc.Stopped
+	}
+	return status.State
+}
+
+func (s *Service) IsRunning() bool {
+	return s.QueryState() == svc.Running
+}
+
+func (s *Service) IsPaused() bool {
+	return s.QueryState() == svc.Paused
 }
