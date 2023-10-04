@@ -5,10 +5,12 @@ import (
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"winsleepd/cmd/tui/service"
 )
 
 type Model struct {
 	Table         table.Model
+	Service       *service.Service
 	EnterFunction []tea.Msg
 	Active        bool
 	TableKeyMap   table.KeyMap
@@ -34,9 +36,9 @@ type Emoji struct {
 }
 
 var emoji = Emoji{
-	True:  "✅",
-	False: "⬜",
-	Empty: "⬛",
+	True:  "✔️",
+	False: "",
+	Empty: "",
 }
 
 var focused = table.DefaultStyles()
@@ -90,6 +92,7 @@ func New() Model {
 	newTable.SetStyles(focused)
 
 	return Model{
+		Service:       service.Get(),
 		Table:         newTable,
 		EnterFunction: functions,
 		Active:        true,
@@ -99,11 +102,9 @@ func New() Model {
 }
 
 func (m Model) Running() (Model, tea.Cmd) {
-	// TODO: Check if not running yet.
-	// if not, return m since we haven't installed yet
-	// if !running {
-	// 	return m, nil
-	// }
+	if !service.Get().IsInstalled() {
+		return m, nil
+	}
 	currentRows := m.Table.Rows()
 	if len(currentRows) > 5 {
 		return m, nil

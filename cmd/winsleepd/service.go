@@ -5,7 +5,7 @@
 //go:build windows
 // +build windows
 
-package main
+package daemon
 
 import (
 	"encoding/json"
@@ -182,7 +182,7 @@ loop:
 	return
 }
 
-func runService(name string, isDebug bool) {
+func RunService(name string, isDebug bool) {
 	var err error
 	if isDebug {
 		elog = debug.New(name)

@@ -15,5 +15,8 @@ func Run() error {
 }
 
 func (m DaemonModel) Init() tea.Cmd {
-	return nil
+	giveDaemon := func() tea.Msg {
+		return &m.Service
+	}
+	return giveDaemon
 }

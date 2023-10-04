@@ -5,7 +5,7 @@
 //go:build windows
 // +build windows
 
-package main
+package daemon
 
 import (
 	"fmt"
@@ -15,7 +15,7 @@ import (
 	"golang.org/x/sys/windows/svc/mgr"
 )
 
-func startService(name string) error {
+func StartService(name string) error {
 	m, err := mgr.Connect()
 	if err != nil {
 		return err
@@ -33,7 +33,7 @@ func startService(name string) error {
 	return nil
 }
 
-func controlService(name string, c svc.Cmd, to svc.State) error {
+func ControlService(name string, c svc.Cmd, to svc.State) error {
 	m, err := mgr.Connect()
 	if err != nil {
 		return err

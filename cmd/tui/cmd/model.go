@@ -2,12 +2,14 @@ package tui
 
 import (
 	"github.com/charmbracelet/bubbles/key"
+	"winsleepd/cmd/tui/service"
 	t "winsleepd/cmd/tui/table"
 )
 
 type DaemonModel struct {
-	Table  t.Model
-	KeyMap KeyMap
+	Service *service.Service
+	table   t.Model
+	keymap  KeyMap
 }
 
 type KeyMap struct {
@@ -30,12 +32,13 @@ type Emoji struct {
 
 func New() DaemonModel {
 	return DaemonModel{
-		Table:  t.New(),
-		KeyMap: DefaultKeyMap,
+		Service: service.Get(),
+		table:   t.New(),
+		keymap:  DefaultKeyMap,
 	}
 }
 
-func (m DaemonModel) running() DaemonModel {
-	m.Table, _ = m.Table.Running()
+func (m DaemonModel) checkInstall() DaemonModel {
+	m.table, _ = m.table.Running()
 	return m
 }

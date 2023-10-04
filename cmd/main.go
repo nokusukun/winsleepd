@@ -24,6 +24,7 @@ import (
 	"strings"
 	"winsleepd"
 	tui "winsleepd/cmd/tui/cmd"
+	"winsleepd/cmd/winsleepd"
 
 	"golang.org/x/sys/windows/svc"
 )
@@ -50,7 +51,7 @@ func main() {
 		log.Fatalf("failed to determine if we are running in service: %v", err)
 	}
 	if inService {
-		runService(ServiceName, false)
+		daemon.RunService(ServiceName, false)
 		return
 	}
 
@@ -66,15 +67,15 @@ func main() {
 	cmd := strings.ToLower(os.Args[1])
 	switch cmd {
 	case "debug":
-		runService(ServiceName, true)
+		daemon.RunService(ServiceName, true)
 		return
 	case "install":
-		_, err = NewConfiguration()
+		_, err = daemon.NewConfiguration()
 		if err != nil {
 			log.Fatalf("failed to create configuration: %v", err)
 		}
 
-		err = installService(ServiceName, Description)
+		err = daemon.InstallService(ServiceName, Description)
 		if err != nil {
 			log.Fatalf("failed to install service: %v", err)
 		}
@@ -90,15 +91,15 @@ func main() {
 			return
 		}
 	case "remove":
-		err = removeService(ServiceName)
+		err = daemon.RemoveService(ServiceName)
 	case "start":
-		err = startService(ServiceName)
+		err = daemon.StartService(ServiceName)
 	case "stop":
-		err = controlService(ServiceName, svc.Stop, svc.Stopped)
+		err = daemon.ControlService(ServiceName, svc.Stop, svc.Stopped)
 	case "pause":
-		err = controlService(ServiceName, svc.Pause, svc.Paused)
+		err = daemon.ControlService(ServiceName, svc.Pause, svc.Paused)
 	case "continue":
-		err = controlService(ServiceName, svc.Continue, svc.Running)
+		err = daemon.ControlService(ServiceName, svc.Continue, svc.Running)
 	case "tui":
 		err = tui.Run()
 	case "debug:sleep":
