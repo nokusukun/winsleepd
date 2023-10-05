@@ -41,9 +41,11 @@ func usage(errmsg string) {
 
 var ServiceName = "winsleepd"
 var Description = "Stupidly Simple Sleep Daemon"
+var InstallAsUser = false
 
 func main() {
 	flag.StringVar(&ServiceName, "name", ServiceName, "name of the service")
+	flag.BoolVar(&InstallAsUser, "as-user", InstallAsUser, "install as user")
 	flag.Parse()
 
 	inService, err := svc.IsWindowsService()
@@ -75,7 +77,7 @@ func main() {
 			log.Fatalf("failed to create configuration: %v", err)
 		}
 
-		err = daemon.InstallService(ServiceName, Description)
+		err = daemon.InstallService(ServiceName, Description, InstallAsUser)
 		if err != nil {
 			log.Fatalf("failed to install service: %v", err)
 		}

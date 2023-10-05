@@ -108,7 +108,8 @@ func New() Model {
 
 func (m Model) Install() (Model, tea.Cmd) {
 	if !service.Get().IsInstalled() {
-		service.Get().Install()
+		// TODO: Install as user
+		service.Get().Install(false)
 	}
 	return m.Installed()
 }

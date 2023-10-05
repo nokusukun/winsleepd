@@ -46,11 +46,11 @@ func runElevated() {
 	}
 }
 
-func (s *Service) Install() {
+func (s *Service) Install(asUser bool) {
 	if s.IsInstalled() {
 		return
 	}
-	err := daemon.InstallService(s.ServiceName, s.Description)
+	err := daemon.InstallService(s.ServiceName, s.Description, asUser)
 	if err != nil {
 		log.Fatalf("failed to install service: %v", err)
 		return

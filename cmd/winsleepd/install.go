@@ -9,11 +9,11 @@ package daemon
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
-
 	"golang.org/x/sys/windows/svc/eventlog"
 	"golang.org/x/sys/windows/svc/mgr"
+	"os"
+	"os/user"
+	"path/filepath"
 )
 
 func exePath() (string, error) {
@@ -42,7 +42,7 @@ func exePath() (string, error) {
 	return "", err
 }
 
-func InstallService(name, desc string) error {
+func InstallService(name, desc string, asUser bool) error {
 	exepath, err := exePath()
 	if err != nil {
 		return err
@@ -57,7 +57,18 @@ func InstallService(name, desc string) error {
 		s.Close()
 		return fmt.Errorf("service %s already exists", name)
 	}
-	s, err = m.CreateService(name, exepath, mgr.Config{DisplayName: desc}, "is", "auto-started")
+	config := mgr.Config{
+		DisplayName: desc,
+	}
+	if asUser {
+		current, err := user.Current()
+		if err != nil {
+			return err
+		}
+		config.ServiceStartName = current.Username
+	}
+
+	s, err = m.CreateService(name, exepath, config, "is", "auto-started")
 	if err != nil {
 		return err
 	}
