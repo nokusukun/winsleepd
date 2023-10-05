@@ -11,12 +11,11 @@ import (
 )
 
 type Model struct {
-	Table         table.Model
-	EnterFunction []tea.Msg
-	Active        bool
-	TableKeyMap   table.KeyMap
-	Additional    KeyMap
-	Spinner       spinner.Model
+	Table       table.Model
+	Active      bool
+	TableKeyMap table.KeyMap
+	Additional  KeyMap
+	Spinner     spinner.Model
 }
 
 type KeyMap struct {
@@ -76,14 +75,6 @@ func New() Model {
 		{emoji.False, "Install"},
 	}
 
-	functions := make([]tea.Msg, len(rows))
-
-	for index, function := range []tea.Msg{
-		Toggle{},
-	} {
-		functions[index] = function
-	}
-
 	newTable := table.New(
 		table.WithColumns(columns),
 		table.WithRows(rows),
@@ -97,12 +88,11 @@ func New() Model {
 	s.Spinner = spinner.Dot
 
 	return Model{
-		Table:         newTable,
-		EnterFunction: functions,
-		Active:        true,
-		TableKeyMap:   table.DefaultKeyMap(),
-		Additional:    DefaultKeyMap,
-		Spinner:       s,
+		Table:       newTable,
+		Active:      true,
+		TableKeyMap: table.DefaultKeyMap(),
+		Additional:  DefaultKeyMap,
+		Spinner:     s,
 	}
 }
 
@@ -164,24 +154,8 @@ func (m Model) Installed() (Model, tea.Cmd) {
 		newRows[i][1] = getCellStyle(row[0]).Render(row[1])
 	}
 
-	newFuncs := make([]tea.Msg, len(newRows))
-
-	for index, function := range []tea.Msg{
-		Toggle{},
-		Toggle{},
-		Toggle{},
-		Toggle{},
-		Toggle{},
-		Toggle{},
-		Toggle{},
-		Toggle{},
-	} {
-		newFuncs[index] = function
-	}
-
 	m.Table.SetRows(newRows)
 	m.Table.SetHeight(len(newRows) + 1)
-	m.EnterFunction = append(m.EnterFunction, newFuncs...)
 	return m.Query()
 }
 
@@ -232,9 +206,9 @@ func (m Model) Query() (Model, tea.Cmd) {
 func getCellStyle(emojiState string) lipgloss.Style {
 	switch emojiState {
 	case emoji.True, emoji.False:
-		return lipgloss.NewStyle().Foreground(lipgloss.Color("#6b6b6b"))
+		return focused.Cell.Foreground(lipgloss.Color("#6b6b6b"))
 	case emoji.Empty:
-		return lipgloss.NewStyle().Foreground(lipgloss.Color("#ffffff"))
+		return focused.Cell.Foreground(lipgloss.Color("#ffffff"))
 	}
 	// Default style for other cases
 	return lipgloss.NewStyle()
