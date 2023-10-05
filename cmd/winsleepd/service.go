@@ -36,11 +36,12 @@ type Configuration struct {
 }
 
 func GetConfiguration() (*Configuration, error) {
-	dir, err := os.UserHomeDir()
-	if err != nil {
-		return nil, err
-	}
-	file, err := os.Open(dir + "/.winsleepd.json")
+	//dir, err := os.UserHomeDir()
+	//if err != nil {
+	//	return nil, err
+	//}
+	dir := "C:\\"
+	file, err := os.Open(dir + ".winsleepd.json")
 	if err != nil {
 		if os.IsNotExist(err) {
 			return NewConfiguration()
@@ -58,10 +59,11 @@ func GetConfiguration() (*Configuration, error) {
 }
 
 func NewConfiguration() (*Configuration, error) {
-	dir, err := os.UserHomeDir()
-	if err != nil {
-		return nil, err
-	}
+	//dir, err := os.UserHomeDir()
+	//if err != nil {
+	//	return nil, err
+	//}
+	dir := "C:\\"
 	file, err := os.Create(filepath.Join(dir, ".winsleepd.json"))
 	if err != nil {
 		return nil, err

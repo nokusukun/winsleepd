@@ -14,12 +14,14 @@ import (
 )
 
 type Service struct {
-	ServiceName string
-	Description string
-	debug       bool
+	ServiceName   string
+	Description   string
+	Configuration *daemon.Configuration
+	debug         bool
 }
 
 var service *Service
+var config *daemon.Configuration
 
 func NewService() *Service {
 	service = &Service{
@@ -37,6 +39,30 @@ func Get() *Service {
 	return NewService()
 }
 
+func GetConfig() *daemon.Configuration {
+	if config != nil {
+		return config
+	}
+	c, err := daemon.GetConfiguration() // also creates a config file if it doesn't exist
+	if err != nil {
+		log.Fatalf("failed to get configuration: %v", err)
+		return nil
+	}
+	return c
+}
+
+func NewConfig() *daemon.Configuration {
+	if config != nil {
+		return config
+	}
+	config, err := daemon.NewConfiguration()
+	if err != nil {
+		log.Fatalf("failed to create configuration: %v", err)
+		return nil
+	}
+	return config
+}
+
 func runElevated() {
 	cmd := exec.Command("powershell", "Start-Process", "powershell", "-Verb", "runas", "-ArgumentList", os.Args[0]+" elevated")
 	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
@@ -47,6 +73,7 @@ func runElevated() {
 }
 
 func (s *Service) Install(asUser bool) {
+	s.Configuration = GetConfig() // also creates a config file if it doesn't exist
 	if s.IsInstalled() {
 		return
 	}
@@ -75,12 +102,17 @@ func (s *Service) Uninstall() {
 }
 
 func (s *Service) Config() {
-	dir, err := os.UserHomeDir()
-	if err != nil {
-		log.Fatalf("failed to get user home directory: %v", err)
-		return
-	}
-	err = exec.Command("cmd", "/C", "start", "", filepath.Join(dir, ".winsleepd.json")).Run()
+	//dir, err := os.UserHomeDir()
+	//if err != nil {
+	//	log.Fatalf("failed to get user home directory: %v", err)
+	//	return
+	//}
+	//dir, err := os.UserHomeDir()
+	//if err != nil {
+	//	return nil, err
+	//}
+	dir := "C:\\"
+	err := exec.Command("cmd", "/C", "start", "", filepath.Join(dir, ".winsleepd.json")).Run()
 	if err != nil {
 		log.Fatalf("failed to open configuration: %v", err)
 		return
