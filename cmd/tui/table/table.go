@@ -68,8 +68,8 @@ func New() Model {
 		Foreground(lipgloss.Color("#bbbbbb"))
 
 	columns := []table.Column{
-		{Title: "#", Width: 6},
-		{Title: "Stats", Width: 50},
+		{Title: "✨", Width: 6},
+		{Title: "Action", Width: 50},
 	}
 
 	rows := []table.Row{
@@ -139,24 +139,29 @@ func (m Model) Uninstall() (Model, tea.Cmd) {
 	return m.Installed()
 }
 
+var installed = []table.Row{
+	{emoji.True, "Install"},
+	{emoji.False, "Start"},
+	{emoji.False, "Stop"},
+	{emoji.False, "Pause"},
+	{emoji.False, "Continue"},
+	{emoji.Empty, "Sleep"},
+	{emoji.Empty, "Config"},
+	{emoji.False, "Debug mode"},
+	{emoji.False, "Uninstall"},
+}
+
 func (m Model) Installed() (Model, tea.Cmd) {
 	if !service.Get().IsInstalled() {
 		return New(), nil
 	}
-	currentRows := m.Table.Rows()
-	if len(currentRows) > 5 {
+	if len(m.Table.Rows()) > 5 {
 		return m.Query()
 	}
-	currentRows[InstallOpt][0] = emoji.True
-	newRows := []table.Row{
-		{emoji.False, "Start"},
-		{emoji.False, "Stop"},
-		{emoji.False, "Pause"},
-		{emoji.False, "Continue"},
-		{emoji.Empty, "Sleep"},
-		{emoji.Empty, "Config"},
-		{emoji.False, "Debug mode"},
-		{emoji.False, "Uninstall"},
+	newRows := installed
+
+	for i, row := range newRows {
+		newRows[i][1] = getCellStyle(row[0]).Render(row[1])
 	}
 
 	newFuncs := make([]tea.Msg, len(newRows))
@@ -174,32 +179,63 @@ func (m Model) Installed() (Model, tea.Cmd) {
 		newFuncs[index] = function
 	}
 
-	rows := append(currentRows, newRows...)
-	m.Table.SetRows(rows)
-	m.Table.SetHeight(len(rows) + 1)
+	m.Table.SetRows(newRows)
+	m.Table.SetHeight(len(newRows) + 1)
 	m.EnterFunction = append(m.EnterFunction, newFuncs...)
 	return m.Query()
 }
 
 func (m Model) Query() (Model, tea.Cmd) {
-	currentRows := m.Table.Rows()
+	if !service.Get().IsInstalled() {
+		return New(), nil
+	}
+	newRows := []table.Row{
+		{emoji.True, "Install"},
+		{emoji.False, "Start"},
+		{emoji.False, "Stop"},
+		{emoji.False, "Pause"},
+		{emoji.False, "Continue"},
+		{emoji.Empty, "Sleep"},
+		{emoji.Empty, "Config"},
+		{emoji.False, "Debug mode"},
+		{emoji.False, "Uninstall"},
+	}
 	switch service.Get().QueryState() {
 	case svc.Running:
-		currentRows[StartOpt][0] = emoji.True
-		currentRows[StopOpt][0] = emoji.Empty
-		currentRows[PauseOpt][0] = emoji.Empty
-		currentRows[ContinueOpt][0] = emoji.True
+		newRows[InstallOpt][0] = emoji.True
+		newRows[StartOpt][0] = emoji.True
+		newRows[StopOpt][0] = emoji.Empty
+		newRows[PauseOpt][0] = emoji.Empty
+		newRows[ContinueOpt][0] = emoji.True
 	case svc.Stopped:
-		currentRows[StartOpt][0] = emoji.Empty
-		currentRows[StopOpt][0] = emoji.True
-		currentRows[PauseOpt][0] = emoji.False
-		currentRows[ContinueOpt][0] = emoji.False
+		newRows[InstallOpt][0] = emoji.True
+		newRows[StartOpt][0] = emoji.Empty
+		newRows[StopOpt][0] = emoji.True
+		newRows[PauseOpt][0] = emoji.False
+		newRows[ContinueOpt][0] = emoji.False
 	case svc.Paused:
-		currentRows[StartOpt][0] = emoji.False
-		currentRows[StopOpt][0] = emoji.Empty
-		currentRows[PauseOpt][0] = emoji.True
-		currentRows[ContinueOpt][0] = emoji.Empty
+		newRows[InstallOpt][0] = emoji.True
+		newRows[StartOpt][0] = emoji.False
+		newRows[StopOpt][0] = emoji.Empty
+		newRows[PauseOpt][0] = emoji.True
+		newRows[ContinueOpt][0] = emoji.Empty
 	}
-	m.Table.SetRows(currentRows)
+
+	for i, row := range newRows {
+		newRows[i][1] = getCellStyle(row[0]).Render(row[1])
+	}
+
+	m.Table.SetRows(newRows)
 	return m, nil
+}
+
+func getCellStyle(emojiState string) lipgloss.Style {
+	switch emojiState {
+	case emoji.True, emoji.False:
+		return lipgloss.NewStyle().Foreground(lipgloss.Color("#6b6b6b"))
+	case emoji.Empty:
+		return lipgloss.NewStyle().Foreground(lipgloss.Color("#ffffff"))
+	}
+	// Default style for other cases
+	return lipgloss.NewStyle()
 }
