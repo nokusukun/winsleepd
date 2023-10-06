@@ -74,8 +74,6 @@ func (m DaemonModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.table = newTable
 			return m, nil
 		}
-	default:
-		return m, cmd
 	}
 	return m, nil
 }

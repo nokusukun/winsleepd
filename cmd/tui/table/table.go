@@ -40,9 +40,9 @@ type Emoji struct {
 }
 
 var emoji = Emoji{
-	True:  "✅",
-	False: "❌",
-	Empty: "⬜",
+	True:  " ✅ ",
+	False: " ❌ ",
+	Empty: " ⬜ ",
 }
 
 var focused = table.DefaultStyles()
@@ -204,9 +204,7 @@ func (m Model) Query() (Model, tea.Cmd) {
 	}
 
 	for row := range newRows {
-		for col, cell := range newRows[row] {
-			newRows[row][col] = zone.Mark(m.Id+strconv.Itoa(row), cell)
-		}
+		newRows[row][1] = zone.Mark(m.Id+strconv.Itoa(row), newRows[row][1]) // TODO: Fix emoji not marked
 	}
 	m.Table.SetRows(newRows)
 	return m, nil
