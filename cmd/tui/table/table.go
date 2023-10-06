@@ -6,7 +6,9 @@ import (
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	zone "github.com/lrstanley/bubblezone"
 	"golang.org/x/sys/windows/svc"
+	"strconv"
 	"winsleepd/cmd/tui/service"
 )
 
@@ -16,6 +18,7 @@ type Model struct {
 	TableKeyMap table.KeyMap
 	Additional  KeyMap
 	Spinner     spinner.Model
+	Id          string
 }
 
 type KeyMap struct {
@@ -93,6 +96,7 @@ func New() Model {
 		TableKeyMap: table.DefaultKeyMap(),
 		Additional:  DefaultKeyMap,
 		Spinner:     s,
+		Id:          zone.NewPrefix(),
 	}
 }
 
@@ -199,6 +203,11 @@ func (m Model) Query() (Model, tea.Cmd) {
 		newRows[i][1] = getCellStyle(row[0]).Render(row[1])
 	}
 
+	for row := range newRows {
+		for col, cell := range newRows[row] {
+			newRows[row][col] = zone.Mark(m.Id+strconv.Itoa(row), cell)
+		}
+	}
 	m.Table.SetRows(newRows)
 	return m, nil
 }

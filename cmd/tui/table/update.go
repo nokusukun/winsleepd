@@ -3,6 +3,8 @@ package table
 import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
+	zone "github.com/lrstanley/bubblezone"
+	"strconv"
 	"winsleepd/cmd/tui/service"
 )
 
@@ -14,6 +16,17 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		return model, tea.Batch(cmd, func() tea.Msg {
 			return Query{}
 		})
+	case tea.MouseMsg:
+		if msg.Type != tea.MouseLeft {
+			return m, nil
+		}
+		for index := range m.Table.Rows() {
+			if zone.Get(m.Id + strconv.Itoa(index)).InBounds(msg) {
+				m.Table.SetCursor(index)
+				return m, nil
+			}
+		}
+		return m, nil
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, m.Additional.Enter):
@@ -32,7 +45,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			case SleepOpt:
 				service.Get().Sleep()
 			case ConfigOpt:
-				service.Get().Config()
+				service.Get().OpenConfig()
 			case DebugOpt:
 				// TODO: Implement debug mode
 			case UninstallOpt:

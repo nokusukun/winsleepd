@@ -101,7 +101,7 @@ func (s *Service) Uninstall() {
 	}
 }
 
-func (s *Service) Config() {
+func (s *Service) OpenConfig() {
 	//dir, err := os.UserHomeDir()
 	//if err != nil {
 	//	log.Fatalf("failed to get user home directory: %v", err)
