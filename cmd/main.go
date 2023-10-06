@@ -104,9 +104,10 @@ func main() {
 		err = daemon.ControlService(ServiceName, svc.Continue, svc.Running)
 	case "tui":
 		err = tui.Run()
-	case "debug:sleep":
-		log.Println("sleeping")
-		winsleepd.Sleep()
+	case "debug:screenoff":
+		winsleepd.ScreenOff()
+	case "debug:lockscreen":
+		winsleepd.LockScreen()
 	default:
 		usage(fmt.Sprintf("invalid command %s", cmd))
 	}
