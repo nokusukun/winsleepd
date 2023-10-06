@@ -2,7 +2,6 @@ package winsleepd
 
 import (
 	"fmt"
-	"os/exec"
 	"syscall"
 	"unsafe"
 )
@@ -21,23 +20,30 @@ func GetMousePos() (x, y int) {
 	return int(pt.X), int(pt.Y)
 }
 
-var (
-	user32, _      = syscall.LoadLibrary("user32.dll")
-	sendMessage, _ = syscall.GetProcAddress(user32, "SendMessageW")
-)
-
 func Sleep() {
-	// 0x0112 is the WM_SYSCOMMAND message
-	// 0xF170 is the SC_MONITORPOWER message
-	// 2 is the power-off parameter
-	ret, _, _ := syscall.Syscall6(sendMessage, 4, 0xffff, 0x0112, 0xF170, 2, 0, 0)
-	fmt.Printf("ret: %v\n", ret)
+	var (
+		powrProfDLL     = syscall.NewLazyDLL("powrprof.dll")
+		setSuspendState = powrProfDLL.NewProc("SetSuspendState")
+	)
+	ret, _, _ := setSuspendState.Call(0, 0, 0)
+	if ret != 0 {
+		fmt.Println("Computer is entering sleep mode")
+	} else {
+		fmt.Println("SetSuspendState failed")
+	}
 }
 
 func LockScreen() {
-	err := exec.Command("rundll32.exe", "user32.dll,LockWorkStation").Run()
-	if err != nil {
-		fmt.Println(err)
+	var (
+		user32          = syscall.NewLazyDLL("user32.dll")
+		lockWorkStation = user32.NewProc("LockWorkStation")
+	)
+
+	ret, _, _ := lockWorkStation.Call()
+	if ret == 0 {
+		fmt.Println("LockWorkStation failed")
+	} else {
+		fmt.Println("PC locked")
 	}
 }
 
@@ -46,8 +52,29 @@ func Hibernate() {
 }
 
 func ScreenOff() {
-	err := exec.Command("powershell.exe", "(Add-Type '[DllImport(\"user32.dll\")]public static extern int SendMessage(int hWnd, int hMsg, int wParam, int lParam);' -Name a -Pas)::SendMessage(-1,0x0112,0xF170,2)").Run()
-	if err != nil {
-		fmt.Println(err)
+	var (
+		user32                 = syscall.NewLazyDLL("user32.dll")
+		sendMessageTimeout     = user32.NewProc("SendMessageTimeoutW")
+		hwndBroadcast          = uintptr(0xffff)
+		wmSysCommand           = uintptr(0x0112)
+		scMonitorPower         = uintptr(0xF170)
+		monitorOff             = uintptr(2)
+		smtoNotimeoutifnothung = uintptr(0x0002)
+	)
+
+	ret, _, _ := sendMessageTimeout.Call(
+		hwndBroadcast,
+		wmSysCommand,
+		scMonitorPower,
+		monitorOff,
+		smtoNotimeoutifnothung,
+		1000,
+		0,
+	)
+
+	if ret == 0 {
+		fmt.Println("SendMessageTimeout failed")
+	} else {
+		fmt.Println("Monitor power state changed")
 	}
 }
