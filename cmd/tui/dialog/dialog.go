@@ -8,6 +8,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	zone "github.com/lrstanley/bubblezone"
+	"winsleepd/cmd/tui/service"
+	"winsleepd/cmd/tui/table"
 )
 
 var (
@@ -16,18 +18,18 @@ var (
 			BorderForeground(lipgloss.Color("#874BFD")).
 			Padding(1, 0)
 
-	buttonStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#FFF7DB")).
-			Background(lipgloss.Color("#888B7E")).
-			Padding(0, 3).
-			MarginTop(1).
-			MarginRight(2)
+	normal = lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#FFF7DB")).
+		Background(lipgloss.Color("#888B7E")).
+		Padding(0, 3).
+		MarginTop(1).
+		MarginRight(2)
 
-	activeButtonStyle = buttonStyle.Copy().
-				Foreground(lipgloss.Color("#FFF7DB")).
-				Background(lipgloss.Color("#F25D94")).
-				MarginRight(2).
-				Underline(true)
+	activated = normal.Copy().
+			Foreground(lipgloss.Color("#FFF7DB")).
+			Background(lipgloss.Color("#F25D94")).
+			MarginRight(2).
+			Underline(true)
 )
 
 type DialogModel struct {
@@ -45,6 +47,13 @@ func (m DialogModel) Init() tea.Cmd {
 
 func (m DialogModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case table.Query:
+		if service.Get().IsInstalled() {
+			m.Active = "confirm"
+		} else {
+			m.Active = "cancel"
+		}
+		return m, nil
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 	case tea.MouseMsg:
@@ -53,8 +62,10 @@ func (m DialogModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		if zone.Get(m.Id + "confirm").InBounds(msg) {
+			service.Get().Install(false)
 			m.Active = "confirm"
 		} else if zone.Get(m.Id + "cancel").InBounds(msg) {
+			service.Get().Uninstall()
 			m.Active = "cancel"
 		}
 
@@ -67,14 +78,14 @@ func (m DialogModel) View() string {
 	var okButton, cancelButton string
 
 	if m.Active == "confirm" {
-		okButton = activeButtonStyle.Render("Yes")
-		cancelButton = buttonStyle.Render("Maybe")
+		okButton = activated.Render("✨")
+		cancelButton = normal.Render("🌱")
 	} else {
-		okButton = buttonStyle.Render("Yes")
-		cancelButton = activeButtonStyle.Render("Maybe")
+		okButton = normal.Render("Yes")
+		//cancelButton = activated.Render("No")
 	}
 
-	question := lipgloss.NewStyle().Width(27).Align(lipgloss.Center).Render("Are you sure you want to eat marmalade?")
+	question := lipgloss.NewStyle().Width(27).Align(lipgloss.Center).Render("Install winsleepd service?")
 	buttons := lipgloss.JoinHorizontal(
 		lipgloss.Top,
 		zone.Mark(m.Id+"confirm", okButton),

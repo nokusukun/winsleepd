@@ -17,7 +17,7 @@ func (m main) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	//var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case table.Query:
-		m.daemon, _ = m.daemon.Update(msg)
+		m.propagate(msg)
 		return m, tea.Tick(100*time.Millisecond, func(t time.Time) tea.Msg {
 			return table.Query{}
 		})
